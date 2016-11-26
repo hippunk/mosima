@@ -25,6 +25,7 @@ turtles-own [
    neffort ;neighbourhood average effort
    nprofit ;neighbourhood average profit
    effort-function
+   noise
 
 ]
 
@@ -37,8 +38,8 @@ to update-values [me him]
     set cumprof cumprof + profit
     set leffort effort
     set lprofit profit
-    set aeffort [effort] of him
-    set aprofit [profit] of him
+    set aeffort ([effort] of him) * noise
+    set aprofit ([profit] of him) * noise
     set cumeffort cumeffort + aeffort
     set numinc numinc + 1
   ]
@@ -127,10 +128,11 @@ end
 to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
   ask me[
 
-    let pr prof [effort] of him effort
-    if profit < pr [set effort pr]
-    set profit prof effort [effort] of him
+    let pr prof ([effort] of him * noise) effort
+    if profit < pr [set effort ([effort] of him * noise)]
+    set profit prof effort (([effort] of him) * noise)
   ]
+
   update-values me him
   ;print "winnerImitator-behavior"
   ;print me
@@ -258,6 +260,7 @@ to setup
     set aprofit profit
     set leffort effort
     set lprofit profit
+    set noise get-noise
   ]
 
 end
@@ -271,6 +274,7 @@ end
 
 to go
   step
+
 end
 
 to step
@@ -278,6 +282,9 @@ to step
   ;movement
   ;game
   ;adaptation
+  ask turtles[
+    set noise get-noise
+  ]
   RandMove
   WorkAgent
   tick
@@ -313,6 +320,7 @@ to WorkAgent
   ;WorkAgent: determines the effort and the reaction of agent whenever it meets another agent; this function implements the behaviour of all the types of agents.
 
   ask turtles[
+
     ask turtles-on neighbors4[
 
       let myslf [dir] of myself
@@ -368,8 +376,8 @@ to-report indProfMax [Ej]
   report id
 end
 
-to-report noise [val]
-  let result val
+to-report get-noise
+  let result 1
   if noise?
   [set result result * (1 + ((Random (NoiseP * 2 + 1) - NoiseP) / 100))]
   report result
@@ -380,8 +388,8 @@ end
 GRAPHICS-WINDOW
 418
 40
-663
-253
+818
+461
 -1
 -1
 13.0
@@ -395,9 +403,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-13
+29
 0
-13
+29
 1
 1
 1
@@ -683,7 +691,7 @@ start-effort
 start-effort
 0.0001
 2.0001
-2.0001
+1.0E-4
 0.01
 1
 NIL
