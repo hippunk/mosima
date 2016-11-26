@@ -1,15 +1,4 @@
-;0: null effort: this agent always exerts the same almost null effort
-;1: shrinking effort: this agent halves the effort provided by its last partner
-;2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
-;3: rational: this agent exerts the best reply for its last partner effort
-;4: profit comparator: this agent compares its profit to its last partner's one; it increases its effort if it gave a higher profit
-;5: high effort: this agent always exerts the same high effort
-;6: average rational: this agent exerts the best reply to the average effort of its partners
-;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
-;8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
-;9: averager: it averages its effort with its last partner's effort
-
-globals [myslf0 slf0]
+globals [myslf0 slf0] ; Variables globales pour utilisation de run, permet d'aléger la boucle de travail en s'abstrayant d'un switch
 
 breed [nullEfforts nulleffort]
 breed [shrinkingEfforts shrinkingEffort]
@@ -39,74 +28,103 @@ turtles-own [
 
 ]
 
+;#################################################################################################################
+;#################################### Behaviors travail agents ###################################################
+;#################################################################################################################
 
-to test [blah]
-  show blah
+
+
+to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the same almost null effort
+  ask me[
+    set profit prof [effort] of me [effort] of him
+  ]
+
+  ;print "NullEffort Behavior"
+  ;print me
+  ;print him
+
 end
 
-to nulleffort-behavior [me him]
-  set profit prof [effort] of me [effort] of him
-  print "NullEffort Behavior"
-  print me
-  print him
-
+to shrinkingEffort-behavior [me him] ;1: shrinking effort: this agent halves the effort provided by its last partner
+  ;print "shrinkingEffort-behavior"
+  ;print me
+  ;print him
 end
 
-to shrinkingEffort-behavior [me him]
-  print "shrinkingEffort-behavior"
-  print me
-  print him
+to replicator-behavior [me him] ;2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
+  ask me[
+    set profit prof effort [effort] of him
+    set aeffort [leffort] of him
+    set effort aeffort
+    set leffort effort
+  ]
+  ;print "replicator-behavior"
+  ;print me
+  ;print him
 end
 
-to replicator-behavior [me him]
-  print "replicator-behavior"
-  print me
-  print him
-end
-
-to rational-behavior [me him]
-  print "rational-behavior"
-  print me
-  print him
+to rational-behavior [me him] ;3: rational: this agent exerts the best reply for its last partner effort
+  ;print "rational-behavior"
+  ;print me
+  ;print him
 end
 
 
-to profitComparator-behavior [me him]
-  print "profitComparator-behavior"
-  print me
-  print him
+to profitComparator-behavior [me him] ;4: profit comparator: this agent compares its profit to its last partner's one; it increases its effort if it gave a higher profit
+  ;print "profitComparator-behavior"
+  ;print me
+  ;print him
 end
 
-to highEffort-behavior [me him]
-  print "highEffort-behavior"
-  print me
-  print him
+to highEffort-behavior [me him] ;5: high effort: this agent always exerts the same high effort
+  ask me[
+    set profit prof [effort] of me [effort] of him
+    set aeffort [leffort] of him
+    set leffort effort
+  ]
+  ;print "highEffort-behavior"
+  ;print me
+  ;print him
 end
 
-to averageRational-behavior [me him]
-  print "averageRational-behavior"
-  print me
-  print him
+to averageRational-behavior [me him] ;6: average rational: this agent exerts the best reply to the average effort of its partners
+  ;print "averageRational-behavior"
+  ;print me
+  ;print him
 end
 
-to winnerImitator-behavior [me him]
-  print "winnerImitator-behavior"
-  print me
-  print him
+to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
+  ;print "winnerImitator-behavior"
+  ;print me
+  ;print him
 end
 
-to effortComparator-behavior [me him]
-  print "effortComparator-behavior"
-  print me
-  print him
+to effortComparator-behavior [me him] ;8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
+    ask me[
+    set profit prof [effort] of me [effort] of him
+    set effort (effort + [effort] of him) / 2
+  ]
+  ;print "effortComparator-behavior"
+  ;print me
+  ;print him
 end
 
-to averager-behavior [me him]
-  print "averager-behaviorr"
-  print me
-  print him
+to averager-behavior [me him] ;9: averager: it averages its effort with its last partner's effort
+  ask me[
+    set profit prof [effort] of me [effort] of him
+    set effort (effort + [effort] of him) / 2
+  ]
+
+  ;print "averager-behaviorr"
+  ;print me
+  ;print him
 end
 
+;#################################################################################################################
+
+;#################################################################################################################
+;#################################### Initialisation des agents###################################################
+;#################################################################################################################
 
 to setup
   clear-turtles
@@ -200,7 +218,18 @@ to setup
 
 end
 
+;#################################################################################################################
+
+;#################################################################################################################
+;#################################### Boucle d'exécution #########################################################
+;#################################################################################################################
+
+
 to go
+  step
+end
+
+to step
   print "tick"
   ;movement
   ;game
@@ -210,8 +239,15 @@ to go
   tick
 end
 
-;Functions
 
+;#################################################################################################################
+
+;#################################################################################################################
+;#################################### Fonctions ##################################################################
+;#################################################################################################################
+
+
+;Fonction de déplacement
 to RandMove
   RandDir ; manque gestion des cases libres. gérer le wrap ?
   ask turtles[
@@ -227,6 +263,8 @@ to RandMove
   ]
 end
 
+
+;Fonction de travail des agents
 to WorkAgent
   ;WorkAgent: determines the effort and the reaction of agent whenever it meets another agent; this function implements the behaviour of all the types of agents.
 
@@ -235,7 +273,7 @@ to WorkAgent
 
       let myslf [dir] of myself
       let slf [dir] of self
-      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2) ;Sale, ecrire condition de team proprement, quite à ce que ce soit long
+      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2)
       [
 
         set myslf0 myself
@@ -253,6 +291,8 @@ to WorkAgent
 
 end
 
+
+;Fonction de changement de direction
 to RandDir
     ;RandDir: randomly assigns the direction the agent faces; this function is important in determining the teams' composition and the agents' movement.
   ask turtles[
@@ -261,9 +301,30 @@ to RandDir
 
 end
 
+
+;Fonction de calcul de profit
 to-report prof [ei ej]
-  report 5 * ( sqrt ( ei + ej ) - (ei * ei) )
+  report (5 *  sqrt ( ei + ej )) - (ei * ei)
 end
+
+;Retourne l'effort qui maximise le profit pour un effort donné.
+to-report indProfMax [Ej]
+  let x 0.0001
+  let maxi 0
+  let id 0
+  while[x < 2.0001][
+    let result prof x Ej
+    if result > maxi[
+      set maxi result
+      set id x
+    ]
+    set x x + 0.0001
+  ]
+
+  report id
+end
+
+;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
 418
@@ -299,7 +360,7 @@ BUTTON
 55
 NIL
 go
-NIL
+T
 1
 T
 OBSERVER
@@ -358,7 +419,7 @@ INPUTBOX
 170
 160
 nbNullEffort
-10
+0
 1
 0
 Number
@@ -379,7 +440,7 @@ INPUTBOX
 170
 223
 nbShrinkingEffort
-10
+0
 1
 0
 Number
@@ -390,7 +451,7 @@ INPUTBOX
 170
 285
 nbReplicator
-10
+100
 1
 0
 Number
@@ -401,7 +462,7 @@ INPUTBOX
 170
 346
 nbRational
-10
+0
 1
 0
 Number
@@ -412,7 +473,7 @@ INPUTBOX
 171
 408
 nbProfitComparator
-10
+0
 1
 0
 Number
@@ -423,7 +484,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-10
+1
 1
 0
 Number
@@ -434,7 +495,7 @@ INPUTBOX
 172
 532
 nbAverageRational
-10
+0
 1
 0
 Number
@@ -445,7 +506,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-10
+0
 1
 0
 Number
@@ -456,7 +517,7 @@ INPUTBOX
 173
 656
 nbEffortComparator
-10
+0
 1
 0
 Number
@@ -467,7 +528,7 @@ INPUTBOX
 174
 718
 nbAverager
-10
+0
 1
 0
 Number
@@ -571,11 +632,39 @@ start-effort
 start-effort
 0.0001
 2.0001
-0.9601
+1.0E-4
 0.01
 1
 NIL
 HORIZONTAL
+
+BUTTON
+89
+61
+152
+94
+NIL
+step
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+MONITOR
+1059
+384
+1230
+429
+mean effort
+mean [effort] of turtles
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
