@@ -9,6 +9,8 @@
 ;8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
 ;9: averager: it averages its effort with its last partner's effort
 
+globals [myslf0 slf0]
+
 breed [nullEfforts nulleffort]
 breed [shrinkingEfforts shrinkingEffort]
 breed [replicators replicator]
@@ -33,39 +35,90 @@ turtles-own [
    aprofit ;last antagonist profit
    neffort ;neighbourhood average effort
    nprofit ;neighbourhood average profit
+   effort-function
+
 ]
 
 
+to test [blah]
+  show blah
+end
+
 to nulleffort-behavior [me him]
+  set profit prof [effort] of me [effort] of him
+  print "NullEffort Behavior"
+  print me
+  print him
+
 end
+
 to shrinkingEffort-behavior [me him]
+  print "shrinkingEffort-behavior"
+  print me
+  print him
 end
+
 to replicator-behavior [me him]
+  print "replicator-behavior"
+  print me
+  print him
 end
+
 to rational-behavior [me him]
+  print "rational-behavior"
+  print me
+  print him
 end
+
+
 to profitComparator-behavior [me him]
+  print "profitComparator-behavior"
+  print me
+  print him
 end
+
 to highEffort-behavior [me him]
+  print "highEffort-behavior"
+  print me
+  print him
 end
+
 to averageRational-behavior [me him]
+  print "averageRational-behavior"
+  print me
+  print him
 end
+
 to winnerImitator-behavior [me him]
+  print "winnerImitator-behavior"
+  print me
+  print him
 end
+
 to effortComparator-behavior [me him]
+  print "effortComparator-behavior"
+  print me
+  print him
 end
+
 to averager-behavior [me him]
+  print "averager-behaviorr"
+  print me
+  print him
 end
+
 
 to setup
   clear-turtles
   clear-drawing
   reset-ticks
   create-nullEfforts nbNullEffort [
+    set effort 0.0001
     set shape "square"
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorNullEffort
+    set effort-function "nulleffort-behavior myslf0 slf0"
   ]
 
   create-shrinkingEfforts nbShrinkingEffort [
@@ -73,6 +126,7 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorShrinkingEffort
+    set effort-function "shrinkingEffort-behavior myslf0 slf0"
   ]
 
   create-replicators nbReplicator[
@@ -80,6 +134,7 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorReplicator
+    set effort-function "replicator-behavior myslf0 slf0"
   ]
 
   create-rationals nbRational[
@@ -87,6 +142,7 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorRational
+    set effort-function "rational-behavior myslf0 slf0"
   ]
 
   create-profitComparators nbProfitComparator[
@@ -94,13 +150,16 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorProfitComparator
+    set effort-function "profitComparator-behavior myslf0 slf0"
   ]
 
   create-highEfforts nbHighEffort[
+    set effort 2.0001
     set shape "square"
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorHighEffort
+    set effort-function "highEffort-behavior myslf0 slf0"
   ]
 
   create-averageRationals nbAverageRational[
@@ -108,6 +167,7 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorAverageRational
+    set effort-function "averageRational-behavior myslf0 slf0"
   ]
 
   create-winnerImitators nbWinnerImitator[
@@ -115,12 +175,14 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorWinnerImitator
+    set effort-function " winnerImitator-behavior myslf0 slf0"
   ]
   create-effortComparators nbEffortComparator[
     set shape "square"
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorEffortComparator
+    set effort-function "effortComparator-behavior myslf0 slf0"
   ]
 
   create-averagers nbAverager[
@@ -128,8 +190,13 @@ to setup
     set xcor random max-pxcor
     set ycor random max-pycor
     set color read-from-string colorAverager
+    set effort-function "averager-behavior myslf0 slf0"
   ]
+  ask turtles[
 
+    if effort = 0 [set effort start-effort]
+    set profit prof effort 0
+  ]
 
 end
 
@@ -169,15 +236,20 @@ to WorkAgent
       let myslf [dir] of myself
       let slf [dir] of self
       if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2) ;Sale, ecrire condition de team proprement, quite à ce que ce soit long
-      [;print "voisin"
-       ;print self
-       ;print myself
-       ;print [breed] of myself = nullefforts]
-       ifelse
-       []
-       [ifelse]
+      [
+
+        set myslf0 myself
+        set slf0 self
+        run [effort-function] of myself
+
+        set myslf0 self
+        set slf0 myself
+        run [effort-function] of self
+
+       ]
+
       ]
-  ]
+    ]
 
 end
 
@@ -192,7 +264,6 @@ end
 to-report prof [ei ej]
   report 5 * ( sqrt ( ei + ej ) - (ei * ei) )
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 418
@@ -287,7 +358,7 @@ INPUTBOX
 170
 160
 nbNullEffort
-30
+10
 1
 0
 Number
@@ -308,7 +379,7 @@ INPUTBOX
 170
 223
 nbShrinkingEffort
-1
+10
 1
 0
 Number
@@ -319,7 +390,7 @@ INPUTBOX
 170
 285
 nbReplicator
-1
+10
 1
 0
 Number
@@ -330,7 +401,7 @@ INPUTBOX
 170
 346
 nbRational
-1
+10
 1
 0
 Number
@@ -341,7 +412,7 @@ INPUTBOX
 171
 408
 nbProfitComparator
-1
+10
 1
 0
 Number
@@ -352,7 +423,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-1
+10
 1
 0
 Number
@@ -363,7 +434,7 @@ INPUTBOX
 172
 532
 nbAverageRational
-1
+10
 1
 0
 Number
@@ -374,7 +445,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-1
+10
 1
 0
 Number
@@ -385,7 +456,7 @@ INPUTBOX
 173
 656
 nbEffortComparator
-1
+10
 1
 0
 Number
@@ -396,7 +467,7 @@ INPUTBOX
 174
 718
 nbAverager
-1
+10
 1
 0
 Number
@@ -459,7 +530,7 @@ CHOOSER
 colorAverageRational
 colorAverageRational
 "gray" "red" "orange" "brown" "yellow" "green" "lime" "turquoise" "cyan" "sky" "blue" "violet" "magenta" "pink"
-11
+13
 
 CHOOSER
 177
@@ -490,6 +561,21 @@ colorAverager
 colorAverager
 "gray" "red" "orange" "brown" "yellow" "green" "lime" "turquoise" "cyan" "sky" "blue" "violet" "magenta" "pink"
 9
+
+SLIDER
+1050
+169
+1222
+202
+start-effort
+start-effort
+0.0001
+2.0001
+0.9601
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -834,7 +920,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.3
+NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
