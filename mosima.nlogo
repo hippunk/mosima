@@ -42,15 +42,16 @@ to update-values [me him]
     set aprofit ([profit] of him) * noise
     set cumeffort cumeffort + aeffort
     set numinc numinc + 1
+    set profit prof effort [effort] of him
   ]
 end
 
 to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the same almost null effort
   ask me[
-    set profit prof [effort] of me [effort] of him
+
 
   ]
-  update-values me him
+
   ;print "NullEffort Behavior"
   ;print me
   ;print him
@@ -59,10 +60,10 @@ end
 
 to shrinkingEffort-behavior [me him] ;1: shrinking effort: this agent halves the effort provided by its last partner
   ask me[
-    set effort [effort] of him / 2
-    set profit prof effort [effort] of him
+    set effort aeffort / 2
+
   ]
-  update-values me him
+
   ;print "shrinkingEffort-behavior"
   ;print me
   ;print him
@@ -71,9 +72,9 @@ end
 to replicator-behavior [me him] ;2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
   ask me[
     set effort aeffort
-    set profit prof effort [effort] of him
+
   ]
-  update-values me him
+
   ;print "replicator-behavior"
   ;print me
   ;print him
@@ -82,21 +83,18 @@ end
 to rational-behavior [me him] ;3: rational: this agent exerts the best reply for its last partner effort
   ask me[
     set effort indProfMax aeffort
-    set profit prof effort [effort] of him
+
   ]
   ;print "rational-behavior"
   ;print me
   ;print him
-  update-values me him
 end
 
 
 to profitComparator-behavior [me him] ;4: profit comparator: this agent compares its profit to its last partner's one; it increases its effort if it gave a higher profit
   ask me[
     ifelse profit < aprofit [set effort effort * 0.9] [set effort effort * 1.1]
-    set profit prof effort [effort] of him
   ]
-  update-values me him
   ;print "profitComparator-behavior"
   ;print me
   ;print him
@@ -104,9 +102,8 @@ end
 
 to highEffort-behavior [me him] ;5: high effort: this agent always exerts the same high effort
   ask me[
-    set profit prof [effort] of me [effort] of him
+
   ]
-  update-values me him
   ;print "highEffort-behavior"
   ;print me
   ;print him
@@ -117,9 +114,7 @@ to averageRational-behavior [me him] ;6: average rational: this agent exerts the
     ifelse numinc = 0
     [set effort indProfMax [effort] of him]
     [set effort indProfMax (cumeffort / numinc)]
-    set profit prof effort [effort] of him
   ]
-  update-values me him
   ;print "averageRational-behavior"
   ;print me
   ;print him
@@ -128,12 +123,14 @@ end
 to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
   ask me[
 
-    let pr prof ([effort] of him * noise) effort
-    if profit < pr [set effort ([effort] of him * noise)]
-    set profit prof effort (([effort] of him) * noise)
+
+    let himeffort ([effort] of him) * noise
+
+    let himprofit prof   himeffort effort
+    if profit < himprofit [set effort himeffort]
+
   ]
 
-  update-values me him
   ;print "winnerImitator-behavior"
   ;print me
   ;print him
@@ -152,10 +149,8 @@ end
 
 to averager-behavior [me him] ;9: averager: it averages its effort with its last partner's effort
   ask me[
-    set profit prof [effort] of me [effort] of him
     set effort (effort + [effort] of him) / 2
   ]
-  update-values me him
   ;print "averager-behaviorr"
   ;print me
   ;print him
@@ -171,98 +166,94 @@ to setup
   clear-turtles
   clear-drawing
   reset-ticks
-  create-nullEfforts nbNullEffort [
-    set effort 0.0001
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorNullEffort
-    set effort-function "nulleffort-behavior myslf0 slf0"
+
+  ask n-of nbNullEffort patches with [not any? turtles-here ] [
+    sprout-nullEfforts 1 [
+      set effort 0.0001
+      set color read-from-string colorNullEffort + random 5 - 2
+      set effort-function "nulleffort-behavior myslf0 slf0"
+    ]
   ]
 
-  create-shrinkingEfforts nbShrinkingEffort [
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorShrinkingEffort
-    set effort-function "shrinkingEffort-behavior myslf0 slf0"
+  ask n-of nbShrinkingEffort patches with [not any? turtles-here ][
+    sprout-shrinkingEfforts  1[
+      set color read-from-string colorShrinkingEffort + random 5 - 2
+      set effort-function "shrinkingEffort-behavior myslf0 slf0"
+    ]
   ]
 
-  create-replicators nbReplicator[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorReplicator
-    set effort-function "replicator-behavior myslf0 slf0"
+  ask n-of nbReplicator patches with [not any? turtles-here ][
+    sprout-replicators  1[
+      set color read-from-string colorReplicator + random 5 - 2
+      set effort-function "replicator-behavior myslf0 slf0"
+    ]
   ]
 
-  create-rationals nbRational[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorRational
-    set effort-function "rational-behavior myslf0 slf0"
+  ask n-of nbRational patches with [not any? turtles-here ][
+    sprout-rationals  1[
+      set color read-from-string colorRational + random 5 - 2
+      set effort-function "rational-behavior myslf0 slf0"
+    ]
   ]
 
-  create-profitComparators nbProfitComparator[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorProfitComparator
-    set effort-function "profitComparator-behavior myslf0 slf0"
+  ask n-of nbProfitComparator patches with [not any? turtles-here ][
+    sprout-profitComparators  1[
+      set color read-from-string colorProfitComparator + random 5 - 2
+      set effort-function "profitComparator-behavior myslf0 slf0"
+    ]
   ]
 
-  create-highEfforts nbHighEffort[
-    set effort 2.0001
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorHighEffort
-    set effort-function "highEffort-behavior myslf0 slf0"
+  ask n-of nbHighEffort patches with [not any? turtles-here ][
+    sprout-highEfforts  1[
+      set effort 2.0001
+      set color read-from-string colorHighEffort + random 5 - 2
+      set effort-function "highEffort-behavior myslf0 slf0"
+    ]
   ]
 
-  create-averageRationals nbAverageRational[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorAverageRational
-    set effort-function "averageRational-behavior myslf0 slf0"
+  ask n-of nbAverageRational patches with [not any? turtles-here ][
+    sprout-averageRationals  1[
+      set color read-from-string colorAverageRational + random 5 - 2
+      set effort-function "averageRational-behavior myslf0 slf0"
+    ]
   ]
 
-  create-winnerImitators nbWinnerImitator[
-    set effort 2.0001
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorWinnerImitator
-    set effort-function " winnerImitator-behavior myslf0 slf0"
-  ]
-  create-effortComparators nbEffortComparator[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorEffortComparator
-    set effort-function "effortComparator-behavior myslf0 slf0"
+  ask n-of nbWinnerImitator patches with [not any? turtles-here ][
+    sprout-winnerImitators  1[
+      set effort 2.0001
+      set color read-from-string colorWinnerImitator + random 5 - 2
+      set effort-function " winnerImitator-behavior myslf0 slf0"
+    ]
   ]
 
-  create-averagers nbAverager[
-    set shape "square"
-    set xcor random max-pxcor
-    set ycor random max-pycor
-    set color read-from-string colorAverager
-    set effort-function "averager-behavior myslf0 slf0"
+  ask n-of nbEffortComparator patches with [not any? turtles-here ][
+    sprout-effortComparators  1[
+      set color read-from-string colorEffortComparator + random 5 - 2
+      set effort-function "effortComparator-behavior myslf0 slf0"
+    ]
   ]
+
+  ask n-of nbAverager patches with [not any? turtles-here ][
+    sprout-averagers  1[
+      set color read-from-string colorAverager + random 5 - 2
+      set effort-function "averager-behavior myslf0 slf0"
+    ]
+  ]
+
   ask turtles[
+    ;set shape "triangle 2"
+
+    ;move-to one-of patches with [not any? turtles-here ]
 
     if effort = 0 [set effort start-effort]
-    set profit prof effort 0
+    set profit  0
     set aeffort effort
     set aprofit profit
     set leffort effort
     set lprofit profit
     set noise get-noise
   ]
-
+  RandDir
 end
 
 ;#################################################################################################################
@@ -302,15 +293,9 @@ end
 to RandMove
   RandDir ; manque gestion des cases libres. gérer le wrap ?
   ask turtles[
-  ifelse dir = 1
-  [set ycor ycor + 1]
-  [ifelse dir = 2
-    [set xcor xcor + 1]
-    [ifelse dir = 3
-      [set ycor ycor - 1]
-      [if dir = 4
-        [set xcor xcor - 1]
-        ]]]
+    if not any? turtles-on patch-ahead 1[
+      forward 1
+    ]
   ]
 end
 
@@ -325,7 +310,7 @@ to WorkAgent
 
       let myslf [dir] of myself
       let slf [dir] of self
-      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2)
+      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2) ;A vérifier sur la tortue d'en face seulement.
       [
 
         set myslf0 myself
@@ -335,6 +320,9 @@ to WorkAgent
         set myslf0 self
         set slf0 myself
         run [effort-function] of self
+
+        update-values myself self
+        update-values self myself
 
        ]
 
@@ -348,7 +336,9 @@ end
 to RandDir
     ;RandDir: randomly assigns the direction the agent faces; this function is important in determining the teams' composition and the agents' movement.
   ask turtles[
-    set dir ((random 4) + 1)
+    let rnd ((random 4) + 1)
+    set dir rnd
+    set heading 270 + 90 * rnd
   ]
 
 end
@@ -386,13 +376,13 @@ end
 ;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-418
-40
-818
-461
+521
+75
+766
+430
+0
 -1
--1
-13.0
+162.0
 1
 10
 1
@@ -403,9 +393,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-29
 0
-29
+0
+1
 1
 1
 1
@@ -565,7 +555,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-100
+2
 1
 0
 Number
@@ -683,10 +673,10 @@ colorAverager
 9
 
 SLIDER
-839
-52
-1011
-85
+951
+33
+1123
+66
 start-effort
 start-effort
 0.0001
@@ -715,10 +705,10 @@ NIL
 1
 
 MONITOR
-838
-91
-1009
-136
+952
+77
+1123
+122
 mean effort
 mean [effort] of turtles
 17
@@ -726,10 +716,10 @@ mean [effort] of turtles
 11
 
 CHOOSER
-919
-361
-1057
-406
+960
+184
+1098
+229
 Color-Type
 Color-Type
 "Type" "Effort"
