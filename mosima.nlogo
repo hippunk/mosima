@@ -32,13 +32,24 @@ turtles-own [
 ;#################################### Behaviors travail agents ###################################################
 ;#################################################################################################################
 
-
+to update-values [me him]
+  ask me[
+    set cumprof cumprof + profit
+    set leffort effort
+    set lprofit profit
+    set aeffort [effort] of him
+    set aprofit [profit] of him
+    set cumeffort cumeffort + aeffort
+    set numinc numinc + 1
+  ]
+end
 
 to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the same almost null effort
   ask me[
     set profit prof [effort] of me [effort] of him
-  ]
 
+  ]
+  update-values me him
   ;print "NullEffort Behavior"
   ;print me
   ;print him
@@ -46,6 +57,11 @@ to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the sa
 end
 
 to shrinkingEffort-behavior [me him] ;1: shrinking effort: this agent halves the effort provided by its last partner
+  ask me[
+    set effort [effort] of him / 2
+    set profit prof effort [effort] of him
+  ]
+  update-values me him
   ;print "shrinkingEffort-behavior"
   ;print me
   ;print him
@@ -53,24 +69,33 @@ end
 
 to replicator-behavior [me him] ;2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
   ask me[
-    set profit prof effort [effort] of him
-    set aeffort [leffort] of him
     set effort aeffort
-    set leffort effort
+    set profit prof effort [effort] of him
   ]
+  update-values me him
   ;print "replicator-behavior"
   ;print me
   ;print him
 end
 
 to rational-behavior [me him] ;3: rational: this agent exerts the best reply for its last partner effort
+  ask me[
+    set effort indProfMax aeffort
+    set profit prof effort [effort] of him
+  ]
   ;print "rational-behavior"
   ;print me
   ;print him
+  update-values me him
 end
 
 
 to profitComparator-behavior [me him] ;4: profit comparator: this agent compares its profit to its last partner's one; it increases its effort if it gave a higher profit
+  ask me[
+    ifelse profit < aprofit [set effort effort * 0.9] [set effort effort * 1.1]
+    set profit prof effort [effort] of him
+  ]
+  update-values me him
   ;print "profitComparator-behavior"
   ;print me
   ;print him
@@ -79,31 +104,45 @@ end
 to highEffort-behavior [me him] ;5: high effort: this agent always exerts the same high effort
   ask me[
     set profit prof [effort] of me [effort] of him
-    set aeffort [leffort] of him
-    set leffort effort
   ]
+  update-values me him
   ;print "highEffort-behavior"
   ;print me
   ;print him
 end
 
 to averageRational-behavior [me him] ;6: average rational: this agent exerts the best reply to the average effort of its partners
+  ask me[
+    ifelse numinc = 0
+    [set effort indProfMax [effort] of him]
+    [set effort indProfMax (cumeffort / numinc)]
+    set profit prof effort [effort] of him
+  ]
+  update-values me him
   ;print "averageRational-behavior"
   ;print me
   ;print him
 end
 
 to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
+  ask me[
+
+    let pr prof [effort] of him effort
+    if profit < pr [set effort pr]
+    set profit prof effort [effort] of him
+  ]
+  update-values me him
   ;print "winnerImitator-behavior"
   ;print me
   ;print him
 end
 
 to effortComparator-behavior [me him] ;8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
-    ask me[
-    set profit prof [effort] of me [effort] of him
-    set effort (effort + [effort] of him) / 2
+   ask me[
+    ifelse effort < aeffort [set effort effort * 1.1] [set effort effort * 0.9]
+    set profit prof effort [effort] of him
   ]
+   update-values me him
   ;print "effortComparator-behavior"
   ;print me
   ;print him
@@ -114,7 +153,7 @@ to averager-behavior [me him] ;9: averager: it averages its effort with its last
     set profit prof [effort] of me [effort] of him
     set effort (effort + [effort] of him) / 2
   ]
-
+  update-values me him
   ;print "averager-behaviorr"
   ;print me
   ;print him
@@ -189,6 +228,7 @@ to setup
   ]
 
   create-winnerImitators nbWinnerImitator[
+    set effort 2.0001
     set shape "square"
     set xcor random max-pxcor
     set ycor random max-pycor
@@ -214,6 +254,10 @@ to setup
 
     if effort = 0 [set effort start-effort]
     set profit prof effort 0
+    set aeffort effort
+    set aprofit profit
+    set leffort effort
+    set lprofit profit
   ]
 
 end
@@ -230,7 +274,7 @@ to go
 end
 
 to step
-  print "tick"
+  ;print "tick"
   ;movement
   ;game
   ;adaptation
@@ -324,13 +368,20 @@ to-report indProfMax [Ej]
   report id
 end
 
+to-report noise [val]
+  let result val
+  if noise?
+  [set result result * (1 + ((Random (NoiseP * 2 + 1) - NoiseP) / 100))]
+  report result
+end
+
 ;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
 418
 40
-818
-461
+663
+253
 -1
 -1
 13.0
@@ -344,9 +395,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-29
+13
 0
-29
+13
 1
 1
 1
@@ -392,9 +443,9 @@ SWITCH
 15
 200
 48
-noise
-noise
-1
+noise?
+noise?
+0
 1
 -1000
 
@@ -403,11 +454,11 @@ SLIDER
 15
 378
 48
-Noise
-Noise
+NoiseP
+NoiseP
 1
 50
-1.1
+50
 0.1
 1
 %
@@ -451,7 +502,7 @@ INPUTBOX
 170
 285
 nbReplicator
-100
+0
 1
 0
 Number
@@ -484,7 +535,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-1
+0
 1
 0
 Number
@@ -506,7 +557,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-0
+100
 1
 0
 Number
@@ -624,15 +675,15 @@ colorAverager
 9
 
 SLIDER
-1050
-169
-1222
-202
+839
+52
+1011
+85
 start-effort
 start-effort
 0.0001
 2.0001
-1.0E-4
+2.0001
 0.01
 1
 NIL
@@ -656,15 +707,25 @@ NIL
 1
 
 MONITOR
-1059
-384
-1230
-429
+838
+91
+1009
+136
 mean effort
 mean [effort] of turtles
 17
 1
 11
+
+CHOOSER
+919
+361
+1057
+406
+Color-Type
+Color-Type
+"Type" "Effort"
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
