@@ -44,7 +44,24 @@ to update-values [me him]
     set cumeffort cumeffort + aeffort
     set numinc numinc + 1
     set profit prof effort ([effort] of him)
+    if behavior-change?[
+      change-behavior me him]
   ]
+end
+
+
+to change-behavior [me him]
+    ask me[
+      let himcumprof ([cumprof] of him) * noise
+      let himnuminc ([numinc] of him)
+      let dice random 100
+      if numinc > 0 and himnuminc > 0 and cumprof / numinc < himcumprof / himnuminc and dice < behavior-change-chance[
+        set effort-function [effort-function] of him
+        set breed [breed] of him
+      ]
+    ]
+
+
 end
 
 to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the same almost null effort
@@ -80,7 +97,9 @@ to profitComparator-behavior [me him] ;4: profit comparator: this agent compares
 end
 
 to highEffort-behavior [me him] ;5: high effort: this agent always exerts the same high effort
-
+  ask me[
+    set effort 2.0001 ;Uniquement pour les tests avec changement de comportement
+  ]
 end
 
 to averageRational-behavior [me him] ;6: average rational: this agent exerts the best reply to the average effort of its partners
@@ -342,6 +361,7 @@ to-report indProfMax [Ej]
   report id
 end
 
+
 ;Génère le bruit
 to-report get-noise
   let result 1
@@ -365,10 +385,10 @@ end
 ;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-359
-73
-930
-665
+542
+86
+888
+453
 -1
 -1
 11.22
@@ -382,9 +402,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-49
+29
 0
-49
+29
 1
 1
 1
@@ -457,7 +477,7 @@ INPUTBOX
 170
 160
 nbNullEffort
-0
+90
 1
 0
 Number
@@ -478,7 +498,7 @@ INPUTBOX
 170
 223
 nbShrinkingEffort
-0
+90
 1
 0
 Number
@@ -489,7 +509,7 @@ INPUTBOX
 170
 285
 nbReplicator
-2499
+90
 1
 0
 Number
@@ -500,7 +520,7 @@ INPUTBOX
 170
 346
 nbRational
-1
+90
 1
 0
 Number
@@ -511,7 +531,7 @@ INPUTBOX
 171
 408
 nbProfitComparator
-0
+90
 1
 0
 Number
@@ -522,7 +542,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-0
+90
 1
 0
 Number
@@ -533,7 +553,7 @@ INPUTBOX
 172
 532
 nbAverageRational
-0
+90
 1
 0
 Number
@@ -544,7 +564,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-0
+90
 1
 0
 Number
@@ -555,7 +575,7 @@ INPUTBOX
 173
 656
 nbEffortComparator
-0
+90
 1
 0
 Number
@@ -566,7 +586,7 @@ INPUTBOX
 174
 718
 nbAverager
-0
+90
 1
 0
 Number
@@ -690,10 +710,10 @@ mean [effort] of turtles
 11
 
 PLOT
-946
-214
-1657
-601
+1150
+69
+1861
+456
 Mean Effort of Agents
 Time
 Mean Effort
@@ -703,7 +723,7 @@ Mean Effort
 2.1
 true
 false
-"" ""
+"clear-plot" ""
 PENS
 "" 1.0 0 -11221820 true "" "plot meaneffort"
 
@@ -729,6 +749,169 @@ min [effort] of turtles
 1
 11
 
+MONITOR
+370
+109
+474
+154
+NIL
+count nullEfforts
+17
+1
+11
+
+MONITOR
+370
+167
+504
+212
+NIL
+count shrinkingEfforts
+17
+1
+11
+
+MONITOR
+368
+666
+472
+711
+NIL
+count averagers
+17
+1
+11
+
+MONITOR
+366
+605
+517
+650
+NIL
+count effortComparators
+17
+1
+11
+
+MONITOR
+370
+537
+504
+582
+NIL
+count winnerImitators
+17
+1
+11
+
+MONITOR
+369
+472
+513
+517
+NIL
+count averageRationals
+17
+1
+11
+
+MONITOR
+369
+415
+478
+460
+NIL
+count highEfforts
+17
+1
+11
+
+MONITOR
+370
+353
+519
+398
+NIL
+count profitComparators
+17
+1
+11
+
+MONITOR
+371
+288
+466
+333
+NIL
+count rationals
+17
+1
+11
+
+MONITOR
+370
+227
+475
+272
+NIL
+count replicators
+17
+1
+11
+
+SLIDER
+554
+17
+757
+50
+behavior-change-chance
+behavior-change-chance
+0
+100
+100
+1
+1
+%
+HORIZONTAL
+
+SWITCH
+397
+16
+552
+49
+behavior-change?
+behavior-change?
+0
+1
+-1000
+
+PLOT
+1157
+460
+1660
+811
+Quantité d'agents de type
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"clear-plot" ""
+PENS
+"nbNullEfforts" 1.0 0 -16777216 true "" "plot count nullEfforts"
+"nbShrinkingEfforts" 1.0 0 -7500403 true "" "plot count shrinkingEfforts"
+"nbReplicators" 1.0 0 -2674135 true "" "plot count replicators"
+"nbRationals" 1.0 0 -955883 true "" "plot count rationals"
+"nbProfitComparators" 1.0 0 -6459832 true "" "plot count profitComparators"
+"nbHighEfforts" 1.0 0 -1184463 true "" "plot count highEfforts"
+"nbAverageRationals" 1.0 0 -10899396 true "" "plot count averageRationals"
+"nbWinnerImitators" 1.0 0 -13840069 true "" "plot count winnerImitators"
+"nbEffortComparators" 1.0 0 -14835848 true "" "plot count effortComparators"
+"nbAveragers" 1.0 0 -11221820 true "" "plot count averagers"
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -742,6 +925,9 @@ Le modèle possède les règles suivantes :
 Agents move and operate on a toroidal grid. At each turn each agent performs two phases:
 	- movement: determines a random direction (North, South, East and West) and if the corresponding adjacent position is not occupied moves to it.
 	- interaction: if two adjacent agents are facing each other they form a team, play the game and according to their type adapt their future effort.
+
+le switch behavior-change? autorise les agents à changer de behavior si le partenaire possède un profit moyen plus élevé
+Behavior-change-chance permet de choisir le % de chance qu'un agent à de changer de behavior
 
 Les catégories d'agents sont les suivantes :
 
@@ -792,9 +978,6 @@ Consider a population consisting only of winner imitators. In absence of noise a
 
 Observing perturbed efforts may lead agents to believe their partner obtained a higher profit by shirking. Since they tend to imitate people with high profit they lower their efforts. In the long run misunderstandings are detrimental to the system and overall effort degenerates to the null effort. The following figure illustrates how noise may lower the organization global effort.
 
-## EXTENDING THE MODEL
-
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
 ## NETLOGO FEATURES
 
