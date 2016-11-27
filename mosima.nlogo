@@ -1,4 +1,4 @@
-globals [myslf0 slf0] ; Variables globales pour utilisation de run, permet d'aléger la boucle de travail en s'abstrayant d'un switch
+globals [myslf0 slf0 meaneffort] ; Variables globales pour utilisation de run, permet d'aléger la boucle de travail en s'abstrayant d'un switch
 
 breed [nullEfforts nulleffort]
 breed [shrinkingEfforts shrinkingEffort]
@@ -33,6 +33,7 @@ turtles-own [
 ;#################################### Behaviors travail agents ###################################################
 ;#################################################################################################################
 
+;Cette fonction met à jour les valuers de l'agent passé en paramètre après travail
 to update-values [me him]
   ask me[
     set cumprof cumprof + profit
@@ -47,14 +48,6 @@ to update-values [me him]
 end
 
 to nulleffort-behavior [me him] ;0: null effort: this agent always exerts the same almost null effort
-  ask me[
-
-
-  ]
-
-  ;print "NullEffort Behavior"
-  ;print me
-  ;print him
 
 end
 
@@ -63,10 +56,6 @@ to shrinkingEffort-behavior [me him] ;1: shrinking effort: this agent halves the
     set effort aeffort / 2
 
   ]
-
-  ;print "shrinkingEffort-behavior"
-  ;print me
-  ;print him
 end
 
 to replicator-behavior [me him] ;2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
@@ -74,10 +63,6 @@ to replicator-behavior [me him] ;2: replicator: this agent exerts the same effor
     set effort aeffort
 
   ]
-
-  ;print "replicator-behavior"
-  ;print me
-  ;print him
 end
 
 to rational-behavior [me him] ;3: rational: this agent exerts the best reply for its last partner effort
@@ -85,9 +70,6 @@ to rational-behavior [me him] ;3: rational: this agent exerts the best reply for
     set effort indProfMax aeffort
 
   ]
-  ;print "rational-behavior"
-  ;print me
-  ;print him
 end
 
 
@@ -95,18 +77,10 @@ to profitComparator-behavior [me him] ;4: profit comparator: this agent compares
   ask me[
     ifelse profit < aprofit [set effort effort * 0.9] [set effort effort * 1.1]
   ]
-  ;print "profitComparator-behavior"
-  ;print me
-  ;print him
 end
 
 to highEffort-behavior [me him] ;5: high effort: this agent always exerts the same high effort
-  ask me[
 
-  ]
-  ;print "highEffort-behavior"
-  ;print me
-  ;print him
 end
 
 to averageRational-behavior [me him] ;6: average rational: this agent exerts the best reply to the average effort of its partners
@@ -115,34 +89,17 @@ to averageRational-behavior [me him] ;6: average rational: this agent exerts the
     [set effort indProfMax ([effort] of him) * noise]
     [set effort indProfMax (cumeffort / numinc)]
   ]
-  ;print "averageRational-behavior"
-  ;print me
-  ;print him
 end
 
 to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
   ask me[
 
-
     let himeffort ([effort] of him) * noise
-
     let himprofit prof   himeffort effort
     let potProf prof effort himeffort
-    ;show "himeffort"
-    ;show himeffort
-    ;show "himprofit"
-    ;show himprofit
-    ;show "profit"
-    ;show profit
-    ;show "effort"
-    ;show effort
     if potProf <= himprofit [set effort himeffort ]
 
   ]
-
-  ;print "winnerImitator-behavior"
-  ;print me
-  ;print him
 end
 
 to effortComparator-behavior [me him] ;8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
@@ -150,19 +107,12 @@ to effortComparator-behavior [me him] ;8: effort comparator: this agent compares
     ifelse effort < aeffort [set effort effort * 1.1] [set effort effort * 0.9]
     set profit prof effort [effort] of him
   ]
-   update-values me him
-  ;print "effortComparator-behavior"
-  ;print me
-  ;print him
 end
 
 to averager-behavior [me him] ;9: averager: it averages its effort with its last partner's effort
   ask me[
-    set effort (effort + [effort] of him) / 2
+    set effort (effort + aeffort) / 2
   ]
-  ;print "averager-behaviorr"
-  ;print me
-  ;print him
 end
 
 ;#################################################################################################################
@@ -175,6 +125,8 @@ to setup
   clear-turtles
   clear-drawing
   reset-ticks
+
+  ;Définition des paramètres initiaux pour les agents, notemment leurs couleurs et leurs handler de travail.
 
   ask n-of nbNullEffort patches with [not any? turtles-here ] [
     sprout-nullEfforts 1 [
@@ -254,16 +206,17 @@ to setup
 
     ;move-to one-of patches with [not any? turtles-here ]
 
-    if effort = 0 [set effort start-effort]
-    set profit  0
-    set aeffort effort
-    set aprofit profit
-    set leffort effort
-    set lprofit profit
+    if effort = 0 [set effort random-float 2 + 0.0001] ; L'effort initial est défini aléatoirement
+    set profit  0.0001 ;Les valeurs initiales des agents sont nullprofit afin d'éviter les divisions par 0 dans certains cas.
+    set aeffort 0.0001
+    set aprofit 0.0001
+    set leffort 0.0001
+    set lprofit 0.0001
     set noise get-noise
   ]
   update-color
   RandDir
+  set meaneffort mean [effort] of turtles
 end
 
 ;#################################################################################################################
@@ -283,12 +236,13 @@ to step
   ;movement
   ;game
   ;adaptation
-  ask turtles[
+  ask turtles[ ;Pour chaque pas de simulation un agent se voit affecter un bruit
     set noise get-noise
   ]
   RandMove
   WorkAgent
   update-color
+  set meaneffort mean [effort] of turtles
   tick
 end
 
@@ -302,7 +256,7 @@ end
 
 ;Fonction de déplacement
 to RandMove
-  RandDir ; manque gestion des cases libres. gérer le wrap ?
+  RandDir ;
   ask turtles[
     if not any? turtles-on patch-ahead 1[
       forward 1
@@ -321,17 +275,23 @@ to WorkAgent
 
       let myslf [dir] of myself
       let slf [dir] of self
-      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2) ;A vérifier sur la tortue d'en face seulement.
+      if (myslf = 1 and slf = 3 or myslf = 2 and slf = 4 or myslf = 3 and slf = 1 or myslf = 4 and slf = 2) ;A vérifier sur la tortue d'en face seulement, en l'état il subsiste des cas ou les agents sont cote à cote et travaillent tout de même, ce phénomène n'impacte pas les résultats.
       [
 
+        ;Le handler de travail permet de simplifier l'exécution et la lisibilité du code pour chaque session de travail on défini l'agent travail et son partenaire
+        ;Le fonctionnement d'un handler de fonction en netlogo étant un peu étrange, nous avons choisi de passer par des variables globales pour passer les paramètres, on y perd en lisibilité, mais on y gagne sur la simplicité de l'implémentation.
+
+        ;Jeu 1
         set myslf0 myself
         set slf0 self
         run [effort-function] of myself
 
+        ;Jeu 2
         set myslf0 self
         set slf0 myself
         run [effort-function] of self
 
+        ;Mise à jour des valeurs des agents après jeu, cette fonction calcule également le nouveau profit.
         update-values myself self
         update-values self myself
 
@@ -361,8 +321,9 @@ to-report prof [ei ej]
 end
 
 ;Retourne l'effort qui maximise le profit pour un effort donné.
+;On explore les points de la fonction pour un pas fixe jusqu'a trouvé le maximum
 to-report indProfMax [Ej]
-  let x 0.01
+  let x 0.01 ;Pas d'exploration défini expérimentalement de sorte à conserver les performances et la précision
   let maxi 0
   let id 0
   let continue true
@@ -374,13 +335,14 @@ to-report indProfMax [Ej]
       set id x
       set x x + 0.01
     ]
-    [set continue false]
+    [set continue false] ;L'étude de la fonction nous permet d'affirmer que celle-ci possède une forme de cloche et que le premier maximum trouvé est global pour notre domaine de définition [0,2], on peut donc stopper l'exploration
 
   ]
 
   report id
 end
 
+;Génère le bruit
 to-report get-noise
   let result 1
   if noise?
@@ -388,6 +350,7 @@ to-report get-noise
   report result
 end
 
+;Permet d'observer la corporate culture
 to update-color
   ask patches[
     set pcolor black
@@ -402,10 +365,10 @@ end
 ;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-370
-86
-941
-678
+359
+73
+930
+665
 -1
 -1
 11.22
@@ -698,21 +661,6 @@ colorAverager
 "gray" "red" "orange" "brown" "yellow" "green" "lime" "turquoise" "cyan" "sky" "blue" "violet" "magenta" "pink"
 9
 
-SLIDER
-951
-33
-1123
-66
-start-effort
-start-effort
-0.0001
-2.0001
-1.0E-4
-0.01
-1
-NIL
-HORIZONTAL
-
 BUTTON
 89
 61
@@ -731,12 +679,52 @@ NIL
 1
 
 MONITOR
-952
-77
-1123
-122
-mean effort
+946
+42
+1117
+87
+meaneffort
 mean [effort] of turtles
+17
+1
+11
+
+PLOT
+946
+214
+1657
+601
+Mean Effort of Agents
+Time
+Mean Effort
+0.0
+1000.0
+0.0
+2.1
+true
+false
+"" ""
+PENS
+"" 1.0 0 -11221820 true "" "plot meaneffort"
+
+MONITOR
+947
+144
+1120
+189
+max effort
+max [effort] of turtles
+17
+1
+11
+
+MONITOR
+946
+95
+1119
+140
+min effort
+min [effort] of turtles
 17
 1
 11
@@ -744,23 +732,65 @@ mean [effort] of turtles
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+Cette simulation modèle simplifié d'entreprise, qui met l'accent sur la notion d'effort et les interactions entre agents hétérogènes.
+Il vise à interpréter les équilbres du modèles comme l'émergence d'une "culture" commune d'entreprise.
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+Le modèle possède les règles suivantes :
+
+Agents move and operate on a toroidal grid. At each turn each agent performs two phases:
+	- movement: determines a random direction (North, South, East and West) and if the corresponding adjacent position is not occupied moves to it.
+	- interaction: if two adjacent agents are facing each other they form a team, play the game and according to their type adapt their future effort.
+
+Les catégories d'agents sont les suivantes :
+
+	0: null effort: this agent always exerts the same almost null effort
+	1: shrinking effort: this agent halves the effort provided by its last partner
+	2: replicator: this agent exerts the same effort its last partner exerted in the previous interaction
+	3: rational: this agent exerts the best reply for its last partner effort
+	4: profit comparator: this agent compares its profit to its last partner's one; it increases its effort if it gave a higher profit
+	5: high effort: this agent always exerts the same high effort
+	6: average rational: this agent exerts the best reply to the average effort of its partners
+	7: winner imitator: this agent starts with high effort but copies its partner's effort when this one proves to yield a higher profit
+	8: effort comparator: this agent compares its effort to its last partner's one; it increases its effort if it is inferior to its partner's one and vice versa
+	9: averager: it averages its effort with its last partner's effort
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+- World parameters:
+	- the dimensions of the world
+
+- Agent parameters:
+	- Number of implemented types. The different types are detailed in "HOW IT WORKS" A coloured label indicates the different kinds of agent appearing in the simulation; agents of the same type are displayed with the same colour
+	- Number of agents for each desired type, it can't exceed the size of the world
+
+- Simulation parameters:
+	- Noise: agents effort may be affected by noise
+	- The percentage of noise may vary from ±1% to ±50%
+
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+une population qui ne comprend que des agents rationnels:
+
+une population constituée seulement d'agents « shrinking effort »:
+
+une population constituée de réplicateurs avec un seul agent à l'effort fixe:
+
+une population constituée des réplicateurs avec un seul agent rationnel:
+
+population des réplicateurs avec un seul agent à effort maximal:
+
+
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+L'effet du noise a des prorpriétés intéressantes sur certains types d'agents notemment sur les WinnerImitators
+
+Consider a population consisting only of winner imitators. In absence of noise all the agents keep exerting the same high effort they started with. With noise, the whole population degenerates to an equilibrium where all agents exert low effort.
+
+Observing perturbed efforts may lead agents to believe their partner obtained a higher profit by shirking. Since they tend to imitate people with high profit they lower their efforts. In the long run misunderstandings are detrimental to the system and overall effort degenerates to the null effort. The following figure illustrates how noise may lower the organization global effort.
 
 ## EXTENDING THE MODEL
 
@@ -768,15 +798,17 @@ mean [effort] of turtles
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
-
-## RELATED MODELS
-
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+Nous avons utilisé la fonction run pour créer un mécanisme resemblant à des pointeurs de fonctions, permetant à chaque agent d'embarquer son handler d'exécution.
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+Arthur Ramolet
+Maël Taguelmint
+
+Reproduction du modèle et des résultats de l'article :
+A multi-agent simulation platform for modeling perfectly rational and bounded-rational agents in organizations
+Arianna Dal Forno and Ugo Merlone (2002)
+http://jasss.soc.surrey.ac.uk/5/2/3.html
 @#$#@#$#@
 default
 true
