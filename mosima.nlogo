@@ -112,7 +112,7 @@ end
 to averageRational-behavior [me him] ;6: average rational: this agent exerts the best reply to the average effort of its partners
   ask me[
     ifelse numinc = 0
-    [set effort indProfMax [effort] of him]
+    [set effort indProfMax ([effort] of him) * noise]
     [set effort indProfMax (cumeffort / numinc)]
   ]
   ;print "averageRational-behavior"
@@ -526,7 +526,7 @@ INPUTBOX
 170
 285
 nbReplicator
-0
+2499
 1
 0
 Number
@@ -537,7 +537,7 @@ INPUTBOX
 170
 346
 nbRational
-0
+1
 1
 0
 Number
