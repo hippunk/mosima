@@ -42,7 +42,7 @@ to update-values [me him]
     set aprofit ([profit] of him) * noise
     set cumeffort cumeffort + aeffort
     set numinc numinc + 1
-    set profit prof effort [effort] of him
+    set profit prof effort ([effort] of him)
   ]
 end
 
@@ -127,7 +127,16 @@ to winnerImitator-behavior [me him] ;7: winner imitator: this agent starts with 
     let himeffort ([effort] of him) * noise
 
     let himprofit prof   himeffort effort
-    if profit < himprofit [set effort himeffort]
+    let potProf prof effort himeffort
+    ;show "himeffort"
+    ;show himeffort
+    ;show "himprofit"
+    ;show himprofit
+    ;show "profit"
+    ;show profit
+    ;show "effort"
+    ;show effort
+    if potProf <= himprofit [set effort himeffort ]
 
   ]
 
@@ -253,6 +262,7 @@ to setup
     set lprofit profit
     set noise get-noise
   ]
+  update-color
   RandDir
 end
 
@@ -278,6 +288,7 @@ to step
   ]
   RandMove
   WorkAgent
+  update-color
   tick
 end
 
@@ -346,21 +357,25 @@ end
 
 ;Fonction de calcul de profit
 to-report prof [ei ej]
-  report (5 *  sqrt ( ei + ej )) - (ei * ei)
+  report ((5 *  sqrt ( ei + ej )) - (ei * ei))
 end
 
 ;Retourne l'effort qui maximise le profit pour un effort donné.
 to-report indProfMax [Ej]
-  let x 0.0001
+  let x 0.01
   let maxi 0
   let id 0
-  while[x < 2.0001][
+  let continue true
+
+  while[x < 2.0001 and continue][
     let result prof x Ej
-    if result > maxi[
+    ifelse result > maxi[
       set maxi result
       set id x
+      set x x + 0.01
     ]
-    set x x + 0.0001
+    [set continue false]
+
   ]
 
   report id
@@ -373,16 +388,27 @@ to-report get-noise
   report result
 end
 
+to update-color
+  ask patches[
+    set pcolor black
+  ]
+    ask turtles[
+
+      set pcolor blue - 10 * floor ((effort - 0.00011) * 5)
+    ]
+
+end
+
 ;#################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-521
-75
-766
-430
-0
+370
+86
+941
+678
 -1
-162.0
+-1
+11.22
 1
 10
 1
@@ -393,9 +419,9 @@ GRAPHICS-WINDOW
 1
 1
 0
+49
 0
-0
-1
+49
 1
 1
 1
@@ -443,7 +469,7 @@ SWITCH
 48
 noise?
 noise?
-0
+1
 1
 -1000
 
@@ -456,7 +482,7 @@ NoiseP
 NoiseP
 1
 50
-50
+1
 0.1
 1
 %
@@ -555,7 +581,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-2
+0
 1
 0
 Number
@@ -714,16 +740,6 @@ mean [effort] of turtles
 17
 1
 11
-
-CHOOSER
-960
-184
-1098
-229
-Color-Type
-Color-Type
-"Type" "Effort"
-0
 
 @#$#@#$#@
 ## WHAT IS IT?
