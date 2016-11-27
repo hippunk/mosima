@@ -36,6 +36,8 @@ turtles-own [
 ;Cette fonction met à jour les valuers de l'agent passé en paramètre après travail
 to update-values [me him]
   ask me[
+    if effort > 2.0001 ;Bidouille un peu sale pour éviter les dépassements d'effort max
+    [set effort 2.0001]
     set cumprof cumprof + profit
     set leffort effort
     set lprofit profit
@@ -226,11 +228,11 @@ to setup
     ;move-to one-of patches with [not any? turtles-here ]
 
     if effort = 0 [set effort random-float 2 + 0.0001] ; L'effort initial est défini aléatoirement
-    set profit  0.0001 ;Les valeurs initiales des agents sont nullprofit afin d'éviter les divisions par 0 dans certains cas.
-    set aeffort 0.0001
-    set aprofit 0.0001
-    set leffort 0.0001
-    set lprofit 0.0001
+    set profit  random-float 2 + 0.0001 ;Les valeurs initiales des agents sont nullprofit afin d'éviter les divisions par 0 dans certains cas.
+    set aeffort random-float 2 + 0.0001
+    set aprofit random-float 2 + 0.0001
+    set leffort random-float 2 + 0.0001
+    set lprofit random-float 2 + 0.0001
     set noise get-noise
   ]
   update-color
@@ -452,7 +454,7 @@ SWITCH
 48
 noise?
 noise?
-1
+0
 1
 -1000
 
@@ -465,7 +467,7 @@ NoiseP
 NoiseP
 1
 50
-1
+39.7
 0.1
 1
 %
@@ -477,7 +479,7 @@ INPUTBOX
 170
 160
 nbNullEffort
-90
+0
 1
 0
 Number
@@ -498,7 +500,7 @@ INPUTBOX
 170
 223
 nbShrinkingEffort
-90
+0
 1
 0
 Number
@@ -509,7 +511,7 @@ INPUTBOX
 170
 285
 nbReplicator
-90
+900
 1
 0
 Number
@@ -520,7 +522,7 @@ INPUTBOX
 170
 346
 nbRational
-90
+0
 1
 0
 Number
@@ -531,7 +533,7 @@ INPUTBOX
 171
 408
 nbProfitComparator
-90
+0
 1
 0
 Number
@@ -542,7 +544,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-90
+0
 1
 0
 Number
@@ -553,7 +555,7 @@ INPUTBOX
 172
 532
 nbAverageRational
-90
+0
 1
 0
 Number
@@ -564,7 +566,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-90
+0
 1
 0
 Number
@@ -575,7 +577,7 @@ INPUTBOX
 173
 656
 nbEffortComparator
-90
+0
 1
 0
 Number
@@ -586,7 +588,7 @@ INPUTBOX
 174
 718
 nbAverager
-90
+0
 1
 0
 Number
@@ -772,10 +774,10 @@ count shrinkingEfforts
 11
 
 MONITOR
-368
-666
-472
-711
+366
+665
+470
+710
 NIL
 count averagers
 17
@@ -783,10 +785,10 @@ count averagers
 11
 
 MONITOR
-366
-605
-517
-650
+369
+606
+520
+651
 NIL
 count effortComparators
 17
