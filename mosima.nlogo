@@ -479,7 +479,7 @@ INPUTBOX
 170
 160
 nbNullEffort
-0
+90
 1
 0
 Number
@@ -500,7 +500,7 @@ INPUTBOX
 170
 223
 nbShrinkingEffort
-0
+90
 1
 0
 Number
@@ -511,7 +511,7 @@ INPUTBOX
 170
 285
 nbReplicator
-900
+90
 1
 0
 Number
@@ -522,7 +522,7 @@ INPUTBOX
 170
 346
 nbRational
-0
+90
 1
 0
 Number
@@ -533,7 +533,7 @@ INPUTBOX
 171
 408
 nbProfitComparator
-0
+90
 1
 0
 Number
@@ -544,7 +544,7 @@ INPUTBOX
 172
 471
 nbHighEffort
-0
+90
 1
 0
 Number
@@ -555,7 +555,7 @@ INPUTBOX
 172
 532
 nbAverageRational
-0
+90
 1
 0
 Number
@@ -566,7 +566,7 @@ INPUTBOX
 172
 594
 nbWinnerImitator
-0
+90
 1
 0
 Number
@@ -577,7 +577,7 @@ INPUTBOX
 173
 656
 nbEffortComparator
-0
+90
 1
 0
 Number
@@ -588,7 +588,7 @@ INPUTBOX
 174
 718
 nbAverager
-0
+90
 1
 0
 Number
@@ -870,7 +870,7 @@ behavior-change-chance
 behavior-change-chance
 0
 100
-100
+10
 1
 1
 %
